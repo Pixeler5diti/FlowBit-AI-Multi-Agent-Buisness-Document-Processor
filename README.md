@@ -2,7 +2,19 @@
 
 **An intelligent workflow orchestrator** that processes emails, PDFs, and JSON inputs, classifies their intent, and triggers context-aware actions.
 
-![System Diagram](https://github.com/Pixeler5diti/FlowBit-AI-Multi-Agent-Buisness-Document-Processor/blob/1cdaa201f77dede0703fee5799590c0d95e5a0ca/attached_assets/flowbit%20ai%20demo.png) *[Use Napkin-style diagram here]*
+## System Architecture
+![System Diagram](https://github.com/Pixeler5diti/FlowBit-AI-Multi-Agent-Buisness-Document-Processor/blob/1cdaa201f77dede0703fee5799590c0d95e5a0ca/attached_assets/flowbit%20ai%20demo.png) 
+
+### Working :
+- Home Page:
+![a](https://github.com/Pixeler5diti/FlowBit-AI-Multi-Agent-Buisness-Document-Processor/blob/260099230d6e7a6159205c2dc779f2f566f07fa6/attached_assets/a.png)
+
+- System Dashboard:
+  ![b](https://github.com/Pixeler5diti/FlowBit-AI-Multi-Agent-Buisness-Document-Processor/blob/260099230d6e7a6159205c2dc779f2f566f07fa6/attached_assets/b.png)
+
+- Classification Results:
+![c](https://github.com/Pixeler5diti/FlowBit-AI-Multi-Agent-Buisness-Document-Processor/blob/260099230d6e7a6159205c2dc779f2f566f07fa6/attached_assets/c.png)
+
 
 ## 🚀 Key Features
 - **Smart Classification**  
