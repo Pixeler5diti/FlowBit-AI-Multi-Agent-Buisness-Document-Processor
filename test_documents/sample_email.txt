@@ -1,0 +1,21 @@
+From: john.smith@acme.com
+To: support@company.com
+Subject: URGENT - System Outage Issue
+Date: Thu, 6 Jun 2025 10:30:00 GMT
+
+Dear Support Team,
+
+We are experiencing a critical system outage that is affecting our entire production environment. This is extremely urgent and needs immediate attention.
+
+Our main application servers went down at 9:45 AM and we're losing significant revenue every minute this continues. The error logs show database connection failures and the load balancer is reporting all backend services as unavailable.
+
+I need someone from your team to contact me immediately at (555) 123-4567. This is a P1 incident and according to our SLA, we should have had a response within 15 minutes.
+
+Please escalate this to your senior technical team right away. We cannot afford any more downtime.
+
+Best regards,
+John Smith
+Senior DevOps Engineer
+ACME Corporation
+john.smith@acme.com
+Direct: (555) 123-4567

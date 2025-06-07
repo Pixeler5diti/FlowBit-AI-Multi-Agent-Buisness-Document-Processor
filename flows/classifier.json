@@ -1,0 +1,94 @@
+{
+  "id": "classifier-agent-flow",
+  "name": "Document Classifier Agent",
+  "description": "Multi-agent document classification system using Gemini 1.5 Flash",
+  "version": "1.0.0",
+  "trigger_types": ["manual", "webhook", "cron"],
+  "inputs": {
+    "content": {
+      "type": "string",
+      "required": true,
+      "description": "Document content to classify"
+    },
+    "filename": {
+      "type": "string",
+      "required": false,
+      "default": "unknown",
+      "description": "Document filename"
+    }
+  },
+  "outputs": {
+    "document_format": {
+      "type": "string",
+      "enum": ["Email", "JSON", "PDF"],
+      "description": "Classified document format"
+    },
+    "business_intent": {
+      "type": "string",
+      "enum": ["RFQ", "Complaint", "Invoice", "Regulation", "Fraud Risk"],
+      "description": "Classified business intent"
+    },
+    "confidence_score": {
+      "type": "number",
+      "description": "Classification confidence score"
+    },
+    "reasoning": {
+      "type": "string",
+      "description": "AI reasoning for classification"
+    },
+    "key_indicators": {
+      "type": "array",
+      "description": "Key indicators found"
+    }
+  },
+  "nodes": [
+    {
+      "id": "input-1",
+      "type": "input",
+      "data": {
+        "component": "TextInput",
+        "display_name": "Document Content",
+        "inputs": ["content", "filename"]
+      },
+      "position": { "x": 100, "y": 100 }
+    },
+    {
+      "id": "classifier-1",
+      "type": "agent",
+      "data": {
+        "component": "ClassifierAgent",
+        "display_name": "Document Classifier",
+        "function": "classify_document",
+        "model": "gemini-1.5-flash"
+      },
+      "position": { "x": 400, "y": 100 }
+    },
+    {
+      "id": "action-router-1",
+      "type": "agent",
+      "data": {
+        "component": "ActionRouter",
+        "display_name": "Action Router",
+        "function": "route_document"
+      },
+      "position": { "x": 700, "y": 100 }
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-1",
+      "source": "input-1",
+      "target": "classifier-1"
+    },
+    {
+      "id": "edge-2", 
+      "source": "classifier-1",
+      "target": "action-router-1"
+    }
+  ],
+  "execution_settings": {
+    "timeout": 60,
+    "retry_count": 3,
+    "error_handling": "fallback"
+  }
+}

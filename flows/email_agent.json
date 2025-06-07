@@ -1,0 +1,97 @@
+{
+  "id": "email-agent-flow",
+  "name": "Email Agent",
+  "description": "Analyzes email content for sender, urgency, and tone",
+  "version": "1.0.0",
+  "trigger_types": ["manual", "webhook", "cron"],
+  "inputs": {
+    "content": {
+      "type": "string",
+      "required": true,
+      "description": "Email content to analyze"
+    },
+    "filename": {
+      "type": "string",
+      "required": false,
+      "default": "unknown",
+      "description": "Email filename"
+    }
+  },
+  "outputs": {
+    "sender_name": {
+      "type": "string",
+      "description": "Extracted sender name"
+    },
+    "sender_email": {
+      "type": "string",
+      "description": "Extracted sender email"
+    },
+    "urgency_level": {
+      "type": "string",
+      "enum": ["Low", "Medium", "High", "Critical"],
+      "description": "Email urgency classification"
+    },
+    "tone": {
+      "type": "string",
+      "enum": ["Professional", "Friendly", "Angry", "Neutral", "Urgent", "Formal"],
+      "description": "Email tone analysis"
+    },
+    "key_phrases": {
+      "type": "array",
+      "description": "Key phrases found in email"
+    },
+    "confidence_score": {
+      "type": "number",
+      "description": "Analysis confidence score"
+    }
+  },
+  "nodes": [
+    {
+      "id": "email-input",
+      "type": "input",
+      "data": {
+        "component": "EmailInput",
+        "display_name": "Email Content",
+        "inputs": ["content", "filename"]
+      },
+      "position": {"x": 100, "y": 100}
+    },
+    {
+      "id": "email-analyzer",
+      "type": "agent",
+      "data": {
+        "component": "EmailAgent",
+        "display_name": "Email Analyzer",
+        "function": "analyze_email",
+        "model": "gemini-1.5-flash"
+      },
+      "position": {"x": 400, "y": 100}
+    },
+    {
+      "id": "email-output",
+      "type": "output",
+      "data": {
+        "component": "EmailOutput",
+        "display_name": "Analysis Results"
+      },
+      "position": {"x": 700, "y": 100}
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-1",
+      "source": "email-input",
+      "target": "email-analyzer"
+    },
+    {
+      "id": "edge-2",
+      "source": "email-analyzer",
+      "target": "email-output"
+    }
+  ],
+  "execution_settings": {
+    "timeout": 30,
+    "retry_count": 3,
+    "error_handling": "fallback"
+  }
+}

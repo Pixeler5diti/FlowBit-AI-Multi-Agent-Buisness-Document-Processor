@@ -1,0 +1,95 @@
+{
+  "id": "pdf-agent-flow",
+  "name": "PDF Agent",
+  "description": "Extracts invoice totals and detects regulatory keywords",
+  "version": "1.0.0",
+  "trigger_types": ["manual", "webhook", "cron"],
+  "inputs": {
+    "content": {
+      "type": "string",
+      "required": true,
+      "description": "PDF content to analyze"
+    },
+    "filename": {
+      "type": "string",
+      "required": false,
+      "default": "unknown",
+      "description": "PDF filename"
+    }
+  },
+  "outputs": {
+    "invoice_total": {
+      "type": "string",
+      "description": "Extracted invoice total amount"
+    },
+    "currency": {
+      "type": "string",
+      "description": "Detected currency"
+    },
+    "monetary_values": {
+      "type": "array",
+      "description": "All monetary values found"
+    },
+    "regulatory_keywords_found": {
+      "type": "array",
+      "description": "Regulatory compliance keywords detected"
+    },
+    "compliance_flags": {
+      "type": "array",
+      "description": "Compliance issues flagged"
+    },
+    "document_type": {
+      "type": "string",
+      "description": "Detected document type"
+    }
+  },
+  "nodes": [
+    {
+      "id": "pdf-input",
+      "type": "input",
+      "data": {
+        "component": "PDFInput",
+        "display_name": "PDF Content",
+        "inputs": ["content", "filename"]
+      },
+      "position": {"x": 100, "y": 100}
+    },
+    {
+      "id": "pdf-processor",
+      "type": "agent",
+      "data": {
+        "component": "PDFAgent",
+        "display_name": "PDF Processor",
+        "function": "analyze_pdf",
+        "model": "gemini-1.5-flash"
+      },
+      "position": {"x": 400, "y": 100}
+    },
+    {
+      "id": "pdf-output",
+      "type": "output",
+      "data": {
+        "component": "PDFOutput",
+        "display_name": "Extraction Results"
+      },
+      "position": {"x": 700, "y": 100}
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-1",
+      "source": "pdf-input",
+      "target": "pdf-processor"
+    },
+    {
+      "id": "edge-2",
+      "source": "pdf-processor",
+      "target": "pdf-output"
+    }
+  ],
+  "execution_settings": {
+    "timeout": 30,
+    "retry_count": 3,
+    "error_handling": "fallback"
+  }
+}

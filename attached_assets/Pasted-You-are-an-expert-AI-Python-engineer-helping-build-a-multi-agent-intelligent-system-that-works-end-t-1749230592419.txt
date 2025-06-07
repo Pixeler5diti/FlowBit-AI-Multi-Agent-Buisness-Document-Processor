@@ -1,0 +1,50 @@
+You are an expert AI Python engineer helping build a multi-agent intelligent system that works end-to-end with minimal effort. Your job is to write code that will execute inside Replit (no Docker), using Gemini 1.5 Flash API as the ONLY LLM.
+
+🎯 Main Goal:
+Build a full app in just 4 checkpoints with:
+- Email, JSON, PDF agents
+- Classifier
+- Action router
+- Memory store
+- Simulated API integration
+- Final export support for LangFlow & Tailwind UI
+
+📦 Expected Features:
+
+✅ Checkpoint 1: Classifier Agent
+- Classifies format: Email, JSON, PDF
+- Classifies business intent: RFQ, Complaint, Invoice, Regulation, Fraud Risk
+- Uses Gemini 1.5 Flash + schema matching
+- Stores result to `memory_store` (in-memory dictionary)
+
+✅ Checkpoint 2: Specialized Agents
+- Email Agent → Extract sender, urgency, tone
+- JSON Agent → Validate schema, flag field/type mismatch
+- PDF Agent → Extract invoice total, detect keywords: GDPR, FDA
+- Simulate API response via `print()` for:
+    - POST /crm/escalate
+    - POST /risk_alert
+
+✅ Checkpoint 3: Action Router + Trace Logger
+- Triggers follow-up action based on classified data
+- Saves logs to a `trace_log` list
+- Example: angry email → escalate CRM
+
+✅ Checkpoint 4: LangFlow & Frontend Compatibility
+- Expose each agent's logic as a callable function
+- Save workflows as `flows/<agent>.json` in LangFlow-compatible format (basic JSON)
+- Add simple HTML page using **Tailwind CSS** to upload input and display routing/logs
+- Load mock API response from this folder:
+  🔗 https://drive.google.com/drive/folders/1Lsqmmcp8dXgCTjiQMd_pUldOW5t4SuXz?usp=sharing
+
+⚙️ Tech Stack Constraints:
+- Use Gemini 1.5 Flash for all LLM classification
+- No Docker / no Redis / no external DBs — use only Replit & in-memory simulation
+- Do not build entire LangFlow or Next.js UI — just make sure your code is **structured so it can plug in easily**
+- Provide functions like `run_email_agent(input)`, `get_logs()`, `trigger_action_router()`, etc.
+
+🧪 Bonus (if time):
+- Retry logic for failed agent actions
+- cron-style trigger via Python's `schedule` or `threading.Timer`
+- Display final logs in styled HTML using Tailwind classes
+code Checkpoint 1. Continue step by step with explanations and clean working code. Ask me before proceeding to each checkpoint.

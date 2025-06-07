@@ -1,0 +1,97 @@
+{
+  "id": "json-agent-flow",
+  "name": "JSON Agent",
+  "description": "Validates JSON schema and detects type mismatches",
+  "version": "1.0.0",
+  "trigger_types": ["manual", "webhook", "cron"],
+  "inputs": {
+    "content": {
+      "type": "string",
+      "required": true,
+      "description": "JSON content to validate"
+    },
+    "filename": {
+      "type": "string",
+      "required": false,
+      "default": "unknown",
+      "description": "JSON filename"
+    }
+  },
+  "outputs": {
+    "is_valid_json": {
+      "type": "boolean",
+      "description": "Whether JSON is syntactically valid"
+    },
+    "validation_status": {
+      "type": "string",
+      "enum": ["Valid", "Invalid Syntax", "Schema Mismatch", "Type Error", "Missing Fields"],
+      "description": "Validation result status"
+    },
+    "severity": {
+      "type": "string",
+      "enum": ["Low", "Medium", "High", "Critical"],
+      "description": "Issue severity level"
+    },
+    "schema_analysis": {
+      "type": "object",
+      "description": "Detected schema information"
+    },
+    "errors_found": {
+      "type": "array",
+      "description": "List of validation errors"
+    },
+    "type_mismatches": {
+      "type": "array",
+      "description": "Fields with type mismatches"
+    }
+  },
+  "nodes": [
+    {
+      "id": "json-input",
+      "type": "input",
+      "data": {
+        "component": "JSONInput",
+        "display_name": "JSON Content",
+        "inputs": ["content", "filename"]
+      },
+      "position": {"x": 100, "y": 100}
+    },
+    {
+      "id": "json-validator",
+      "type": "agent",
+      "data": {
+        "component": "JSONAgent",
+        "display_name": "JSON Validator",
+        "function": "analyze_json",
+        "model": "gemini-1.5-flash"
+      },
+      "position": {"x": 400, "y": 100}
+    },
+    {
+      "id": "json-output",
+      "type": "output",
+      "data": {
+        "component": "JSONOutput",
+        "display_name": "Validation Results"
+      },
+      "position": {"x": 700, "y": 100}
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-1",
+      "source": "json-input",
+      "target": "json-validator"
+    },
+    {
+      "id": "edge-2",
+      "source": "json-validator",
+      "target": "json-output"
+    }
+  ],
+  "execution_settings": {
+    "timeout": 30,
+    "retry_count": 3,
+    "error_handling": "fallback"
+  }
+}

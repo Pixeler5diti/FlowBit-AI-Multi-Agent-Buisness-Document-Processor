@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Classification Results - Multi-Agent System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#7575e4',
+                        background: 'hsl(0 0% 3.9%)',
+                        foreground: 'hsl(0 0% 98%)',
+                        card: 'hsl(0 0% 3.9%)',
+                        'card-foreground': 'hsl(0 0% 98%)',
+                        border: 'hsl(0 0% 14.9%)',
+                        input: 'hsl(0 0% 14.9%)',
+                        muted: 'hsl(0 0% 14.9%)',
+                        'muted-foreground': 'hsl(0 0% 63.9%)'
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body class="bg-background text-foreground min-h-screen">
+    <div class="container mx-auto px-4 py-8 max-w-6xl">
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-8">
+            <h1 class="text-3xl font-bold flex items-center">
+                <svg class="w-8 h-8 text-primary mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                </svg>
+                Classification Results
+            </h1>
+            <a href="{{ url_for('index') }}" class="bg-muted hover:bg-muted/80 px-4 py-2 rounded-lg transition-colors duration-200 flex items-center">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                </svg>
+                New Classification
+            </a>
+        </div>
+
+        <!-- Main Results Card -->
+        <div class="bg-card border border-border rounded-lg p-8 mb-8">
+            <div class="flex justify-between items-start mb-6">
+                <div>
+                    <h2 class="text-2xl font-semibold mb-2 flex items-center">
+                        <svg class="w-6 h-6 text-primary mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        {{ result.filename }}
+                    </h2>
+                    <p class="text-muted-foreground">
+                        Classified on {{ result.timestamp.split('T')[0] }} at {{ result.timestamp.split('T')[1][:8] }}
+                    </p>
+                </div>
+                <div class="text-right">
+                    <div class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium
+                        {% if result.confidence_score > 0.8 %}bg-green-900/50 text-green-100{% elif result.confidence_score > 0.5 %}bg-yellow-900/50 text-yellow-100{% else %}bg-red-900/50 text-red-100{% endif %}">
+                        {{ (result.confidence_score * 100)|round(1) }}% Confidence
+                    </div>
+                </div>
+            </div>
+            
+            <div class="grid md:grid-cols-2 gap-6">
+                <!-- Document Format -->
+                <div class="border border-border rounded-lg p-6">
+                    <h3 class="text-lg font-semibold mb-4 flex items-center text-blue-400">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        Document Format
+                    </h3>
+                    <div class="flex items-center">
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-900/50 text-blue-100 mr-3">
+                            {{ result.document_format }}
+                        </span>
+                        {% if result.document_format == 'Email' %}
+                            <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                            </svg>
+                        {% elif result.document_format == 'JSON' %}
+                            <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path>
+                            </svg>
+                        {% elif result.document_format == 'PDF' %}
+                            <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Business Intent -->
+                <div class="border border-border rounded-lg p-6">
+                    <h3 class="text-lg font-semibold mb-4 flex items-center text-yellow-400">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                        </svg>
+                        Business Intent
+                    </h3>
+                    <div class="flex items-center">
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-900/50 text-yellow-100 mr-3">
+                            {{ result.business_intent }}
+                        </span>
+                        {% if result.business_intent == 'RFQ' %}
+                            <svg class="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                            </svg>
+                        {% elif result.business_intent == 'Complaint' %}
+                            <svg class="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        {% elif result.business_intent == 'Invoice' %}
+                            <svg class="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                            </svg>
+                        {% elif result.business_intent == 'Regulation' %}
+                            <svg class="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16l3-1m-3 1l-3-1"></path>
+                            </svg>
+                        {% elif result.business_intent == 'Fraud Risk' %}
+                            <svg class="w-5 h-5 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                            </svg>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Analysis Details -->
+        <div class="grid lg:grid-cols-3 gap-6 mb-8">
+            <!-- AI Reasoning -->
+            <div class="lg:col-span-2 bg-card border border-border rounded-lg p-6">
+                <h3 class="text-lg font-semibold mb-4 flex items-center">
+                    <svg class="w-5 h-5 text-purple-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                    </svg>
+                    AI Reasoning
+                </h3>
+                <p class="text-muted-foreground">{{ result.reasoning }}</p>
+            </div>
+
+            <!-- Key Indicators -->
+            <div class="bg-card border border-border rounded-lg p-6">
+                <h3 class="text-lg font-semibold mb-4 flex items-center">
+                    <svg class="w-5 h-5 text-green-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path>
+                    </svg>
+                    Key Indicators
+                </h3>
+                <div class="space-y-2">
+                    {% for indicator in result.key_indicators %}
+                        <span class="inline-block bg-muted text-muted-foreground px-2 py-1 rounded text-sm mr-1 mb-1">{{ indicator }}</span>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Specialized Analysis Results -->
+        {% if result.specialized_analysis %}
+        <div class="bg-card border border-border rounded-lg p-6 mb-8">
+            <h3 class="text-lg font-semibold mb-6 flex items-center">
+                <svg class="w-5 h-5 text-primary mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                Specialized Agent Analysis
+            </h3>
+            
+            {% if result.specialized_analysis.agent_type == 'email' %}
+                <div class="grid md:grid-cols-3 gap-4">
+                    <div class="text-center p-4 border border-border rounded-lg">
+                        <div class="text-2xl font-bold text-primary">{{ result.specialized_analysis.sender_name }}</div>
+                        <div class="text-sm text-muted-foreground">Sender</div>
+                    </div>
+                    <div class="text-center p-4 border border-border rounded-lg">
+                        <div class="text-2xl font-bold text-yellow-400">{{ result.specialized_analysis.urgency_level }}</div>
+                        <div class="text-sm text-muted-foreground">Urgency</div>
+                    </div>
+                    <div class="text-center p-4 border border-border rounded-lg">
+                        <div class="text-2xl font-bold text-green-400">{{ result.specialized_analysis.tone }}</div>
+                        <div class="text-sm text-muted-foreground">Tone</div>
+                    </div>
+                </div>
+            {% elif result.specialized_analysis.agent_type == 'json' %}
+                <div class="grid md:grid-cols-3 gap-4">
+                    <div class="text-center p-4 border border-border rounded-lg">
+                        <div class="text-2xl font-bold {% if result.specialized_analysis.is_valid_json %}text-green-400{% else %}text-red-400{% endif %}">
+                            {% if result.specialized_analysis.is_valid_json %}Valid{% else %}Invalid{% endif %}
+                        </div>
+                        <div class="text-sm text-muted-foreground">JSON Status</div>
+                    </div>
+                    <div class="text-center p-4 border border-border rounded-lg">
+                        <div class="text-2xl font-bold text-blue-400">{{ result.specialized_analysis.validation_status }}</div>
+                        <div class="text-sm text-muted-foreground">Validation</div>
+                    </div>
+                    <div class="text-center p-4 border border-border rounded-lg">
+                        <div class="text-2xl font-bold text-yellow-400">{{ result.specialized_analysis.severity }}</div>
+                        <div class="text-sm text-muted-foreground">Severity</div>
+                    </div>
+                </div>
+            {% elif result.specialized_analysis.agent_type == 'pdf' %}
+                <div class="grid md:grid-cols-3 gap-4">
+                    <div class="text-center p-4 border border-border rounded-lg">
+                        <div class="text-2xl font-bold text-green-400">${{ result.specialized_analysis.invoice_total }}</div>
+                        <div class="text-sm text-muted-foreground">Invoice Total</div>
+                    </div>
+                    <div class="text-center p-4 border border-border rounded-lg">
+                        <div class="text-2xl font-bold text-blue-400">{{ result.specialized_analysis.regulatory_keywords_found|length }}</div>
+                        <div class="text-sm text-muted-foreground">Regulatory Keywords</div>
+                    </div>
+                    <div class="text-center p-4 border border-border rounded-lg">
+                        <div class="text-2xl font-bold text-purple-400">{{ result.specialized_analysis.document_type }}</div>
+                        <div class="text-sm text-muted-foreground">Document Type</div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <!-- Routing Decisions -->
+        {% if result.routing_decisions %}
+        <div class="bg-card border border-border rounded-lg p-6 mb-8">
+            <h3 class="text-lg font-semibold mb-6 flex items-center">
+                <svg class="w-5 h-5 text-orange-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 9l3 3m0 0l-3 3m3-3H8m13 0a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                Action Router Decisions
+            </h3>
+            
+            <div class="grid md:grid-cols-2 gap-6">
+                <!-- Actions Triggered -->
+                <div>
+                    <h4 class="font-medium mb-3">Actions Triggered ({{ result.routing_decisions.actions_triggered|length }})</h4>
+                    <div class="space-y-2">
+                        {% for action in result.routing_decisions.actions_triggered %}
+                            <div class="bg-muted border border-border rounded p-3">
+                                <div class="font-medium">{{ action.action_type.replace('_', ' ').title() }}</div>
+                                <div class="text-sm text-muted-foreground">{{ action.reason }}</div>
+                                <div class="text-xs text-yellow-400 mt-1">Priority: {{ action.priority.title() }}</div>
+                            </div>
+                        {% endfor %}
+                        {% if not result.routing_decisions.actions_triggered %}
+                            <div class="text-muted-foreground">No actions triggered</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Escalations -->
+                <div>
+                    <h4 class="font-medium mb-3">Escalations ({{ result.routing_decisions.escalations|length }})</h4>
+                    <div class="space-y-2">
+                        {% for escalation in result.routing_decisions.escalations %}
+                            <div class="bg-muted border border-border rounded p-3">
+                                <div class="font-medium">{{ escalation.escalation_type.replace('_', ' ').title() }}</div>
+                                <div class="text-sm text-muted-foreground">{{ escalation.reason }}</div>
+                                <div class="text-xs text-blue-400 mt-1">Target: {{ escalation.target.replace('_', ' ').title() }}</div>
+                            </div>
+                        {% endfor %}
+                        {% if not result.routing_decisions.escalations %}
+                            <div class="text-muted-foreground">No escalations required</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Technical Details -->
+        <div class="bg-card border border-border rounded-lg p-6">
+            <h3 class="text-lg font-semibold mb-4 flex items-center">
+                <svg class="w-5 h-5 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                </svg>
+                Technical Details
+            </h3>
+            <div class="grid md:grid-cols-4 gap-4 text-sm">
+                <div>
+                    <div class="font-medium text-muted-foreground">Result ID</div>
+                    <div class="font-mono text-xs bg-muted px-2 py-1 rounded mt-1">{{ result_id }}</div>
+                </div>
+                <div>
+                    <div class="font-medium text-muted-foreground">Agent Used</div>
+                    <div class="capitalize">{{ result.agent_type }}</div>
+                </div>
+                <div>
+                    <div class="font-medium text-muted-foreground">Model</div>
+                    <div>{{ result.model_used }}</div>
+                </div>
+                <div>
+                    <div class="font-medium text-muted-foreground">Content Size</div>
+                    <div>{{ result.content_length }} characters</div>
+                </div>
+            </div>
+            
+            {% if result.error %}
+                <div class="mt-4 p-3 bg-yellow-900/50 border border-yellow-700 rounded-lg">
+                    <div class="flex items-center text-yellow-100">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <strong>Note:</strong> Fallback classification used due to: {{ result.error }}
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>

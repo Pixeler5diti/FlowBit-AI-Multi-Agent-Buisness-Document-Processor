@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FlowBit AI Multi-Agent Document Classifier</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#7575e4',
+                        background: 'hsl(0 0% 3.9%)',
+                        foreground: 'hsl(0 0% 98%)',
+                        card: 'hsl(0 0% 3.9%)',
+                        'card-foreground': 'hsl(0 0% 98%)',
+                        border: 'hsl(0 0% 14.9%)',
+                        input: 'hsl(0 0% 14.9%)',
+                        muted: 'hsl(0 0% 14.9%)',
+                        'muted-foreground': 'hsl(0 0% 63.9%)'
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body class="bg-background text-foreground min-h-screen">
+    
+    <div class="container mx-auto px-4 py-8 max-w-4xl">
+        
+        <!-- Header -->
+        <div class="text-center mb-12">
+            <div class="inline-flex items-center justify-center w-16 h-16 bg-primary/10 rounded-full mb-4">
+                <svg class="w-8 h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+            </div>
+            <h1 class="text-4xl font-bold mb-4">Multi-Agent Document Classifier</h1>
+            <p class="text-muted-foreground text-lg max-w-2xl mx-auto">
+                Upload documents to classify format and business intent using AI-powered agents
+            </p>
+        </div>
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="mb-6 p-4 rounded-lg border {% if category == 'error' %}bg-red-950/50 border-red-900 text-red-100{% else %}bg-green-950/50 border-green-900 text-green-100{% endif %}">
+                        <div class="flex items-center">
+                            <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                {% if category == 'error' %}
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                {% else %}
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                {% endif %}
+                            </svg>
+                            {{ message }}
+                        </div>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <!-- Upload Form -->
+        <div class="bg-card border border-border rounded-lg p-8 mb-8">
+            <div class="flex items-center mb-6">
+                <svg class="w-6 h-6 text-primary mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                </svg>
+                <h2 class="text-2xl font-semibold">Document Upload & Classification</h2>
+            </div>
+            
+            <form action="{{ url_for('upload_file') }}" method="post" enctype="multipart/form-data" id="uploadForm">
+                <div class="mb-6">
+                    <label for="file" class="block text-sm font-medium mb-3">Select Document</label>
+                    <div class="relative">
+                        <input type="file" id="file" name="file" required
+                               accept=".txt,.pdf,.json,.eml,.msg"
+                               class="block w-full px-4 py-3 bg-input border border-border rounded-lg text-foreground file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-primary file:text-white hover:file:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary/50">
+                    </div>
+                    <p class="text-muted-foreground text-sm mt-2">
+                        Supported formats: TXT, PDF, JSON, EML, MSG (Max size: 16MB)
+                    </p>
+                </div>
+                
+                <button type="submit" class="w-full bg-primary hover:bg-primary/90 text-white font-medium py-3 px-6 rounded-lg transition-colors duration-200 flex items-center justify-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    Classify Document
+                </button>
+            </form>
+        </div>
+
+        <!-- Navigation -->
+        <div class="flex justify-center mb-8">
+            <div class="flex space-x-4">
+                <a href="{{ url_for('dashboard') }}" class="bg-muted hover:bg-muted/80 text-foreground px-4 py-2 rounded-lg transition-colors duration-200 flex items-center">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                    </svg>
+                    Dashboard
+                </a>
+                <a href="/memory" class="bg-muted hover:bg-muted/80 text-foreground px-4 py-2 rounded-lg transition-colors duration-200 flex items-center">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                    </svg>
+                    Memory Store
+                </a>
+            </div>
+        </div>
+
+        <!-- Information Grid -->
+        <div class="grid md:grid-cols-2 gap-6 mb-8">
+            <!-- Document Formats -->
+            <div class="bg-card border border-border rounded-lg p-6">
+                <h3 class="text-lg font-semibold mb-4 flex items-center">
+                    <div class="w-8 h-8 bg-blue-500/10 rounded-lg flex items-center justify-center mr-3">
+                        <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                    </div>
+                    Document Formats
+                </h3>
+                <div class="space-y-3">
+                    <div class="flex items-center text-muted-foreground">
+                        <div class="w-2 h-2 bg-green-400 rounded-full mr-3"></div>
+                        Email
+                    </div>
+                    <div class="flex items-center text-muted-foreground">
+                        <div class="w-2 h-2 bg-blue-400 rounded-full mr-3"></div>
+                        JSON
+                    </div>
+                    <div class="flex items-center text-muted-foreground">
+                        <div class="w-2 h-2 bg-red-400 rounded-full mr-3"></div>
+                        PDF
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Business Intents -->
+            <div class="bg-card border border-border rounded-lg p-6">
+                <h3 class="text-lg font-semibold mb-4 flex items-center">
+                    <div class="w-8 h-8 bg-yellow-500/10 rounded-lg flex items-center justify-center mr-3">
+                        <svg class="w-4 h-4 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                        </svg>
+                    </div>
+                    Business Intents
+                </h3>
+                <div class="space-y-3">
+                    <div class="flex items-center text-muted-foreground">
+                        <div class="w-2 h-2 bg-purple-400 rounded-full mr-3"></div>
+                        RFQ (Request for Quote)
+                    </div>
+                    <div class="flex items-center text-muted-foreground">
+                        <div class="w-2 h-2 bg-orange-400 rounded-full mr-3"></div>
+                        Complaint
+                    </div>
+                    <div class="flex items-center text-muted-foreground">
+                        <div class="w-2 h-2 bg-green-400 rounded-full mr-3"></div>
+                        Invoice
+                    </div>
+                    <div class="flex items-center text-muted-foreground">
+                        <div class="w-2 h-2 bg-blue-400 rounded-full mr-3"></div>
+                        Regulation
+                    </div>
+                    <div class="flex items-center text-muted-foreground">
+                        <div class="w-2 h-2 bg-red-400 rounded-full mr-3"></div>
+                        Fraud Risk
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Status -->
+        <div class="bg-card border border-border rounded-lg p-6">
+            <h3 class="text-lg font-semibold mb-4 flex items-center">
+                <div class="w-8 h-8 bg-green-500/10 rounded-lg flex items-center justify-center mr-3">
+                    <svg class="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+                System Status
+            </h3>
+            <div class="grid md:grid-cols-4 gap-4">
+                <div class="flex items-center text-muted-foreground">
+                    <div class="w-2 h-2 bg-green-400 rounded-full mr-2"></div>
+                    <span class="text-sm">Classifier Agent</span>
+                </div>
+                <div class="flex items-center text-muted-foreground">
+                    <div class="w-2 h-2 bg-green-400 rounded-full mr-2"></div>
+                    <span class="text-sm">Email Agent</span>
+                </div>
+                <div class="flex items-center text-muted-foreground">
+                    <div class="w-2 h-2 bg-green-400 rounded-full mr-2"></div>
+                    <span class="text-sm">JSON Agent</span>
+                </div>
+                <div class="flex items-center text-muted-foreground">
+                    <div class="w-2 h-2 bg-green-400 rounded-full mr-2"></div>
+                    <span class="text-sm">PDF Agent</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Modal -->
+    <div id="loadingModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm hidden items-center justify-center z-50">
+        <div class="bg-card border border-border rounded-lg p-8 max-w-sm w-full mx-4">
+            <div class="text-center">
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+                <h3 class="text-lg font-semibold mb-2">Classifying Document...</h3>
+                <p class="text-muted-foreground">AI agents are analyzing your document</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('uploadForm').addEventListener('submit', function(e) {
+            const fileInput = document.getElementById('file');
+            if (!fileInput.files.length) {
+                e.preventDefault();
+                alert('Please select a file to upload');
+                return;
+            }
+            
+            const file = fileInput.files[0];
+            const maxSize = 16 * 1024 * 1024; // 16MB
+            
+            if (file.size > maxSize) {
+                e.preventDefault();
+                alert('File size exceeds 16MB limit. Please select a smaller file.');
+                return;
+            }
+            
+            // Show loading modal
+            document.getElementById('loadingModal').classList.remove('hidden');
+            document.getElementById('loadingModal').classList.add('flex');
+        });
+    </script>
+</body>
+</html>

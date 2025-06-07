@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Multi-Agent System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#7575e4',
+                        background: 'hsl(0 0% 3.9%)',
+                        foreground: 'hsl(0 0% 98%)',
+                        card: 'hsl(0 0% 3.9%)',
+                        'card-foreground': 'hsl(0 0% 98%)',
+                        border: 'hsl(0 0% 14.9%)',
+                        input: 'hsl(0 0% 14.9%)',
+                        muted: 'hsl(0 0% 14.9%)',
+                        'muted-foreground': 'hsl(0 0% 63.9%)'
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body class="bg-background text-foreground min-h-screen">
+    <div class="container mx-auto px-4 py-8 max-w-7xl">
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-8">
+            <h1 class="text-3xl font-bold flex items-center">
+                <svg class="w-8 h-8 text-primary mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                </svg>
+                System Dashboard
+            </h1>
+            <div class="flex space-x-4">
+                <a href="{{ url_for('index') }}" class="bg-primary hover:bg-primary/90 px-4 py-2 rounded-lg transition-colors duration-200 flex items-center">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                    </svg>
+                    New Upload
+                </a>
+                <a href="/memory" class="bg-muted hover:bg-muted/80 px-4 py-2 rounded-lg transition-colors duration-200 flex items-center">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4"></path>
+                    </svg>
+                    Memory Store
+                </a>
+            </div>
+        </div>
+
+        <!-- System Statistics -->
+        <div class="grid md:grid-cols-4 gap-6 mb-8">
+            <div class="bg-card border border-border rounded-lg p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-muted-foreground text-sm">Total Classifications</p>
+                        <p class="text-2xl font-bold">{{ stats.total_classifications }}</p>
+                    </div>
+                    <div class="w-10 h-10 bg-blue-500/10 rounded-lg flex items-center justify-center">
+                        <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-card border border-border rounded-lg p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-muted-foreground text-sm">Trace Logs</p>
+                        <p class="text-2xl font-bold">{{ stats.total_trace_logs }}</p>
+                    </div>
+                    <div class="w-10 h-10 bg-green-500/10 rounded-lg flex items-center justify-center">
+                        <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-card border border-border rounded-lg p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-muted-foreground text-sm">Agent States</p>
+                        <p class="text-2xl font-bold">{{ stats.total_agent_states }}</p>
+                    </div>
+                    <div class="w-10 h-10 bg-purple-500/10 rounded-lg flex items-center justify-center">
+                        <svg class="w-5 h-5 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-card border border-border rounded-lg p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-muted-foreground text-sm">System Status</p>
+                        <p class="text-2xl font-bold text-green-400">{{ stats.memory_store_status.title() }}</p>
+                    </div>
+                    <div class="w-10 h-10 bg-green-500/10 rounded-lg flex items-center justify-center">
+                        <svg class="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Agent Status Grid -->
+        <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="bg-card border border-border rounded-lg p-6">
+                <div class="flex items-center mb-4">
+                    <div class="w-8 h-8 bg-blue-500/10 rounded-lg flex items-center justify-center mr-3">
+                        <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="font-semibold">Classifier Agent</h3>
+                </div>
+                <div class="flex items-center text-green-400">
+                    <div class="w-2 h-2 bg-green-400 rounded-full mr-2"></div>
+                    <span class="text-sm">Active</span>
+                </div>
+                <p class="text-muted-foreground text-xs mt-2">Document format & intent classification</p>
+            </div>
+
+            <div class="bg-card border border-border rounded-lg p-6">
+                <div class="flex items-center mb-4">
+                    <div class="w-8 h-8 bg-green-500/10 rounded-lg flex items-center justify-center mr-3">
+                        <svg class="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="font-semibold">Email Agent</h3>
+                </div>
+                <div class="flex items-center text-green-400">
+                    <div class="w-2 h-2 bg-green-400 rounded-full mr-2"></div>
+                    <span class="text-sm">Active</span>
+                </div>
+                <p class="text-muted-foreground text-xs mt-2">Sender, urgency & tone analysis</p>
+            </div>
+
+            <div class="bg-card border border-border rounded-lg p-6">
+                <div class="flex items-center mb-4">
+                    <div class="w-8 h-8 bg-purple-500/10 rounded-lg flex items-center justify-center mr-3">
+                        <svg class="w-4 h-4 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"></path>
+                        </svg>
+                    </div>
+                    <h3 class="font-semibold">JSON Agent</h3>
+                </div>
+                <div class="flex items-center text-green-400">
+                    <div class="w-2 h-2 bg-green-400 rounded-full mr-2"></div>
+                    <span class="text-sm">Active</span>
+                </div>
+                <p class="text-muted-foreground text-xs mt-2">Schema validation & type checking</p>
+            </div>
+
+            <div class="bg-card border border-border rounded-lg p-6">
+                <div class="flex items-center mb-4">
+                    <div class="w-8 h-8 bg-red-500/10 rounded-lg flex items-center justify-center mr-3">
+                        <svg class="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="font-semibold">PDF Agent</h3>
+                </div>
+                <div class="flex items-center text-green-400">
+                    <div class="w-2 h-2 bg-green-400 rounded-full mr-2"></div>
+                    <span class="text-sm">Active</span>
+                </div>
+                <p class="text-muted-foreground text-xs mt-2">Invoice extraction & compliance detection</p>
+            </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="grid lg:grid-cols-3 gap-6">
+            <!-- Recent Trace Logs -->
+            <div class="lg:col-span-2 bg-card border border-border rounded-lg p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h3 class="text-lg font-semibold flex items-center">
+                        <svg class="w-5 h-5 text-yellow-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        Recent Activity
+                    </h3>
+                    <button onclick="refreshLogs()" class="text-muted-foreground hover:text-foreground">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                        </svg>
+                    </button>
+                </div>
+                
+                <div class="space-y-3" id="logsList">
+                    {% for log in logs %}
+                        <div class="flex items-start space-x-3 p-3 bg-muted rounded-lg">
+                            <div class="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0"></div>
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center justify-between">
+                                    <p class="text-sm font-medium">{{ log.action.replace('_', ' ').title() }}</p>
+                                    <p class="text-xs text-muted-foreground">{{ log.timestamp.split('T')[1][:8] }}</p>
+                                </div>
+                                <p class="text-xs text-muted-foreground mt-1">
+                                    {% if log.details.filename %}
+                                        File: {{ log.details.filename }}
+                                    {% endif %}
+                                    {% if log.details.actions_count %}
+                                        - {{ log.details.actions_count }} actions triggered
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                    {% endfor %}
+                    {% if not logs %}
+                        <div class="text-center text-muted-foreground py-8">
+                            <svg class="w-12 h-12 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                            </svg>
+                            <p>No activity logs yet</p>
+                            <p class="text-xs mt-1">Start by uploading a document to see system activity</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- LangFlow Export -->
+            <div class="bg-card border border-border rounded-lg p-6">
+                <h3 class="text-lg font-semibold mb-4 flex items-center">
+                    <svg class="w-5 h-5 text-green-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                    </svg>
+                    Export & Integration
+                </h3>
+                
+                <div class="space-y-4">
+                    <div class="p-4 border border-border rounded-lg">
+                        <h4 class="font-medium mb-2">LangFlow Integration</h4>
+                        <p class="text-sm text-muted-foreground mb-3">Export the complete multi-agent workflow for LangFlow</p>
+                        <button onclick="exportLangFlow()" class="w-full bg-primary hover:bg-primary/90 text-white py-2 px-4 rounded-lg text-sm transition-colors duration-200">
+                            Export Workflow
+                        </button>
+                    </div>
+
+                    <div class="p-4 border border-border rounded-lg">
+                        <h4 class="font-medium mb-2">API Functions</h4>
+                        <p class="text-sm text-muted-foreground mb-3">Access individual agent functions</p>
+                        <div class="space-y-2">
+                            <div class="text-xs font-mono bg-muted p-2 rounded">run_email_agent()</div>
+                            <div class="text-xs font-mono bg-muted p-2 rounded">run_json_agent()</div>
+                            <div class="text-xs font-mono bg-muted p-2 rounded">run_pdf_agent()</div>
+                            <div class="text-xs font-mono bg-muted p-2 rounded">trigger_action_router()</div>
+                        </div>
+                    </div>
+
+                    <div class="p-4 border border-border rounded-lg">
+                        <h4 class="font-medium mb-2">System Health</h4>
+                        <div class="space-y-2">
+                            <div class="flex items-center justify-between text-sm">
+                                <span>Memory Store</span>
+                                <span class="text-green-400">Operational</span>
+                            </div>
+                            <div class="flex items-center justify-between text-sm">
+                                <span>All Agents</span>
+                                <span class="text-green-400">Ready</span>
+                            </div>
+                            <div class="flex items-center justify-between text-sm">
+                                <span>Action Router</span>
+                                <span class="text-green-400">Active</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function refreshLogs() {
+            try {
+                const response = await fetch('/api/logs?limit=10');
+                const data = await response.json();
+                
+                const logsList = document.getElementById('logsList');
+                logsList.innerHTML = '';
+                
+                if (data.logs && data.logs.length > 0) {
+                    data.logs.forEach(log => {
+                        const logElement = document.createElement('div');
+                        logElement.className = 'flex items-start space-x-3 p-3 bg-muted rounded-lg';
+                        logElement.innerHTML = `
+                            <div class="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0"></div>
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center justify-between">
+                                    <p class="text-sm font-medium">${log.action.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}</p>
+                                    <p class="text-xs text-muted-foreground">${log.timestamp.split('T')[1].substring(0, 8)}</p>
+                                </div>
+                                <p class="text-xs text-muted-foreground mt-1">
+                                    ${log.details.filename ? `File: ${log.details.filename}` : ''}
+                                    ${log.details.actions_count ? `- ${log.details.actions_count} actions triggered` : ''}
+                                </p>
+                            </div>
+                        `;
+                        logsList.appendChild(logElement);
+                    });
+                } else {
+                    logsList.innerHTML = `
+                        <div class="text-center text-muted-foreground py-8">
+                            <svg class="w-12 h-12 mx-auto mb-4 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                            </svg>
+                            <p>No activity logs yet</p>
+                            <p class="text-xs mt-1">Start by uploading a document to see system activity</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error refreshing logs:', error);
+            }
+        }
+
+        function exportLangFlow() {
+            const flowData = {
+                "id": "multi-agent-classifier-flow",
+                "name": "Multi-Agent Document Classifier",
+                "description": "Complete multi-agent system for document classification and routing",
+                "version": "1.0.0",
+                "nodes": [
+                    {
+                        "id": "input-1",
+                        "type": "input",
+                        "data": {
+                            "component": "TextInput",
+                            "display_name": "Document Input",
+                            "inputs": {
+                                "content": {"type": "str", "required": true},
+                                "filename": {"type": "str", "required": false}
+                            }
+                        },
+                        "position": {"x": 100, "y": 100}
+                    },
+                    {
+                        "id": "classifier-1",
+                        "type": "agent",
+                        "data": {
+                            "component": "ClassifierAgent",
+                            "display_name": "Document Classifier",
+                            "function": "classify_document"
+                        },
+                        "position": {"x": 400, "y": 100}
+                    },
+                    {
+                        "id": "email-agent-1",
+                        "type": "agent",
+                        "data": {
+                            "component": "EmailAgent",
+                            "display_name": "Email Analyzer",
+                            "function": "run_email_agent"
+                        },
+                        "position": {"x": 700, "y": 50}
+                    },
+                    {
+                        "id": "json-agent-1",
+                        "type": "agent",
+                        "data": {
+                            "component": "JSONAgent",
+                            "display_name": "JSON Validator",
+                            "function": "run_json_agent"
+                        },
+                        "position": {"x": 700, "y": 150}
+                    },
+                    {
+                        "id": "pdf-agent-1",
+                        "type": "agent",
+                        "data": {
+                            "component": "PDFAgent",
+                            "display_name": "PDF Processor",
+                            "function": "run_pdf_agent"
+                        },
+                        "position": {"x": 700, "y": 250}
+                    },
+                    {
+                        "id": "action-router-1",
+                        "type": "agent",
+                        "data": {
+                            "component": "ActionRouter",
+                            "display_name": "Action Router",
+                            "function": "trigger_action_router"
+                        },
+                        "position": {"x": 1000, "y": 150}
+                    }
+                ],
+                "edges": [
+                    {"source": "input-1", "target": "classifier-1"},
+                    {"source": "classifier-1", "target": "email-agent-1"},
+                    {"source": "classifier-1", "target": "json-agent-1"},
+                    {"source": "classifier-1", "target": "pdf-agent-1"},
+                    {"source": "email-agent-1", "target": "action-router-1"},
+                    {"source": "json-agent-1", "target": "action-router-1"},
+                    {"source": "pdf-agent-1", "target": "action-router-1"}
+                ]
+            };
+
+            const blob = new Blob([JSON.stringify(flowData, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `multi-agent-classifier-flow-${Date.now()}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // Auto-refresh logs every 30 seconds
+        setInterval(refreshLogs, 30000);
+    </script>
+</body>
+</html>
