@@ -1,0 +1,12 @@
+{
+  "name": "multi-agent-coordinator",
+  "version": "1.0.0",
+  "main": "start-cron.js",
+  "type": "module",
+  "scripts": {
+    "start-cron": "node start-cron.js"
+  },
+  "dependencies": {
+    "node-cron": "^3.0.2"
+  }
+}
