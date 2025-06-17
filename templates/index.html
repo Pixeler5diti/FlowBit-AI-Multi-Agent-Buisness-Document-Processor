@@ -25,6 +25,52 @@
             }
         }
     </script>
+</script>
+    <script>
+        function startSSE(runId) {
+            const logContainer = document.getElementById('message-logs');
+            logContainer.innerHTML = ''; // Clear old logs
+
+            const eventSource = new EventSource(`/api/langflow/stream/${runId}`);
+
+            eventSource.onmessage = function(event) {
+
+                const logEntry = document.createElement('div');
+                logEntry.textContent = event.data;
+                logContainer.appendChild(logEntry);
+            };
+
+            eventSource.onerror = function(err) {
+
+                console.error("SSE connection error:", err);
+                eventSource.close();
+
+
+            };
+}
+</script>
+<script>
+const runId = 'enter yo run id';
+
+const eventSource = new EventSource(`/api/langflow/stream/${runId}`);
+eventSource.onmessage = function(event) {
+    const data = JSON.parse(event.data);
+    console.log('LangFlow event:', data);
+
+    // Append to log UI
+    const logContainer = document.getElementById('message-logs');
+    if (logContainer) {
+        const msg = document.createElement('div');
+        msg.textContent = JSON.stringify(data, null, 2);
+        logContainer.appendChild(msg);
+    }
+};
+</script>
+
+<div id="message-logs" style="height: 300px; overflow-y: auto; border: 1px solid #ccc; padding: 10px;">
+</div>
+<button onclick="startSSE('your sse ID')">Start Streaming Logs</button>
+
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body class="bg-background text-foreground min-h-screen">
