@@ -14,6 +14,8 @@ services:
       - ./test_documents:/app/test_documents
       - ./uploads:/app/uploads
     restart: unless-stopped
+    depends_on:
+      - langflow
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:5000/api/flows"]
       interval: 30s
@@ -21,7 +23,12 @@ services:
       retries: 3
       start_period: 40s
 
-  # Optional: Add a reverse proxy for production
+  langflow:
+    image: langflow/langflow:latest
+    ports:
+      - "7860:7860"
+    restart: unless-stopped
+
   nginx:
     image: nginx:alpine
     ports:
