@@ -7,6 +7,7 @@ from flask import Flask, render_template, request, flash, redirect, url_for, jso
 from werkzeug.middleware.proxy_fix import ProxyFix
 from werkzeug.utils import secure_filename
 import traceback
+RUNS_FILE = 'data/runs.json'
 
 from agents.classifier import ClassifierAgent
 from agents.email_agent import EmailAgent
@@ -14,6 +15,32 @@ from agents.json_agent import JSONAgent
 from agents.pdf_agent import PDFAgent
 from agents.action_router import ActionRouter
 from memory_store import MemoryStore
+from langflow_bridge import langflow_run
+from frontend.src.hooks.webhook_handler import handle_webhook
+from routes.langflow import langflow
+
+import requests
+from flask import Response, stream_with_context
+from utils.runs_store import save_run
+
+
+run_id = response_json["id"] 
+input_data = payload  # or specific fields
+
+save_run(run_id, input_data)
+
+@app.route('/api/langflow/stream/<run_id>', methods=['GET'])
+def stream_run_events(run_id):
+    def event_stream():
+        try:
+            with requests.get(f'http://langflow:7860/api/runs/{run_id}/events', stream=True) as r:
+                for line in r.iter_lines():
+                    if line:
+                        yield f"data: {line.decode('utf-8')}\n\n"
+        except Exception as e:
+            yield f"data: Error: {str(e)}\n\n"
+
+    return Response(stream_with_context(event_stream()), mimetype='text/event-stream')
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG)
@@ -22,6 +49,27 @@ logging.basicConfig(level=logging.DEBUG)
 app = Flask(__name__)
 app.secret_key = os.environ.get("SESSION_SECRET", "dev-secret-key-change-in-production")
 app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
+app.register_blueprint(langflow)
+
+import requests
+from flask import Flask, Response, request, stream_with_context
+
+app = Flask(__name__)
+
+@app.route('/api/langflow/runs', methods=['POST'])
+def langflow_runs():
+    langflow_url = "http://langflow:7860/api/runs"  # URL of the LangFlow service in docker-compose
+    payload = request.get_json()
+
+    # Make request to LangFlow with streaming
+    def generate():
+        with requests.post(langflow_url, json=payload, stream=True) as r:
+            for line in r.iter_lines():
+                if line:
+                    yield f"data: {line.decode()}\n\n"
+
+    return Response(stream_with_context(generate()), mimetype='text/event-stream')
+
 
 # Configure upload settings
 UPLOAD_FOLDER = 'uploads'
@@ -207,6 +255,53 @@ def dashboard():
         app.logger.error(f"Dashboard error: {str(e)}")
         flash('Error loading dashboard', 'error')
         return redirect(url_for('index'))
+@app.route('/api/runs', methods=['GET'])
+def list_runs():
+    if os.path.exists(RUNS_FILE):
+        with open(RUNS_FILE, 'r') as f:
+            data = json.load(f)
+    else:
+        data = {}
+
+    return jsonify(data)
+
+import json
+import os
+from datetime import datetime
+
+RUNS_FILE = 'data/runs.json'
+
+def save_run_metadata(run_id, metadata):
+    # Load existing data
+    if os.path.exists(RUNS_FILE):
+        with open(RUNS_FILE, 'r') as f:
+            data = json.load(f)
+    else:
+        data = {}
+
+    # Add new run
+    data[run_id] = metadata
+
+    # Save back
+    with open(RUNS_FILE, 'w') as f:
+        json.dump(data, f, indent=2)
+
+@app.route('/api/trigger', methods=['POST'])
+def trigger_run():
+    body = request.json
+    # send POST to LangFlow here...
+    run_id = "generated_or_received_run_id"
+
+    metadata = {
+        "timestamp": datetime.utcnow().isoformat(),
+        "input": body,
+        "status": "triggered"
+    }
+
+    save_run_metadata(run_id, metadata)
+
+    return jsonify({"run_id": run_id})
+
 
 def get_logs():
     """Helper function for LangFlow compatibility"""
